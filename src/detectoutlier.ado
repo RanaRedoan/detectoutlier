@@ -1,4 +1,3 @@
-```stata
 program define detectoutlier
     version 15.1
     syntax varlist(min=1 numeric) [, addvar(varlist) sd(real 3) using(string) avoid(numlist)]
@@ -57,7 +56,7 @@ program define detectoutlier
             quietly gen `value' = `var'
             
             // Get variable label
-            local varlabel: variable label `var'
+            local varlabel : variable label `var'
             if "`varlabel'" == "" local varlabel "`var'"
             
             // Post outlier observations to results
@@ -100,4 +99,3 @@ program define detectoutlier
     // Restore original data
     restore
 end
-```

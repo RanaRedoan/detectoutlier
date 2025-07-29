@@ -1,20 +1,17 @@
 ```stata
 program define detectoutlier
     version 15.1
-    syntax varlist(min=1 numeric) [, addvar(varlist) sd(real 3) using(string)]
+    syntax varlist(min=1 numeric) [, addvar(varlist) sd(real 3) using(string) avoid(numlist)]
     
     // Check if using option is specified
     if "`using'" == "" {
-        di as error "using option required"
+        display as error "using option required"
         exit 198
     }
     
-    // Debug: Display the using option
-    di as text "Debug: using option specified as: `using'"
-    
     // Check if file extension is .xlsx
     if !regexm("`using'", "\.xlsx$") {
-        di as error "Output file must have .xlsx extension. Specified: `using'"
+        display as error "Output file must have .xlsx extension. Specified: `using'"
         exit 198
     }
     
@@ -22,46 +19,63 @@ program define detectoutlier
     preserve
     
     // Initialize temporary variables
-    tempvar mean sd lower upper outlier
+    tempvar mean sd lower upper outlier value
     tempname results
+    tempfile tempout
+    
+    // Initialize row counter and Excel settings
+    local row = 1
+    local header = "firstrow(variables)"
+    local sheetsettings = "sheetreplace"
     
     // Create temporary file to store results
-    tempfile tempout
     postfile `results' str32 variable str244 varlabel `addvar' double value using `tempout'
     
     // Loop through each variable in varlist
     foreach var of varlist `varlist' {
-        // Calculate mean and standard deviation
-        quietly summarize `var'
-        scalar `mean' = r(mean)
-        scalar `sd' = r(sd)
-        
-        // Calculate outlier bounds
-        scalar `lower' = `mean' - `sd' * `r(sd)'
-        scalar `upper' = `mean' + `sd' * `r(sd)'
-        
-        // Generate outlier indicator
-        quietly gen `outlier' = (`var' < `lower' | `var' > `upper') & !missing(`var')
-        
-        // Get variable label
-        local varlabel: variable label `var'
-        if "`varlabel'" == "" local varlabel "`var'"
-        
-        // Post outlier observations to results
-        quietly levelsof _n if `outlier', local(obs)
-        foreach i of local obs {
-            local val = `var'[`i']
-            local postcmd "post `results' ("`var'") ("`varlabel'") "
-            foreach addv of varlist `addvar' {
-                local val`addv' = `addv'[`i']
-                local postcmd "`postcmd' (`val`addv'') "
+        // Check if variable has non-missing observations
+        quietly count if `var' != .
+        if r(N) > 0 {
+            // Temporarily set avoid values to missing
+            if "`avoid'" != "" {
+                foreach val of numlist `avoid' {
+                    quietly replace `var' = . if `var' == `val'
+                }
             }
-            local postcmd "`postcmd' (`val')"
-            quietly `postcmd'
+            
+            // Calculate mean and standard deviation
+            quietly summarize `var'
+            scalar `mean' = r(mean)
+            scalar `sd' = r(sd)
+            
+            // Calculate outlier bounds
+            scalar `lower' = `mean' - `sd' * r(sd)
+            scalar `upper' = `mean' + `sd' * r(sd)
+            
+            // Generate outlier indicator
+            quietly gen `outlier' = (`var' < `lower' | `var' > `upper') & !missing(`var')
+            quietly gen `value' = `var'
+            
+            // Get variable label
+            local varlabel: variable label `var'
+            if "`varlabel'" == "" local varlabel "`var'"
+            
+            // Post outlier observations to results
+            quietly levelsof _n if `outlier', local(obs)
+            foreach i of local obs {
+                local val = `value'[`i']
+                local postcmd "post `results' (`"`var'"') (`"`varlabel'"') "
+                foreach addv of varlist `addvar' {
+                    local val`addv' = `addv'[`i']
+                    local postcmd "`postcmd' (`"`val`addv''"') "
+                }
+                local postcmd "`postcmd' (`val')"
+                quietly `postcmd'
+            }
+            
+            // Drop temporary variables
+            quietly drop `outlier' `value'
         }
-        
-        // Drop temporary outlier variable
-        quietly drop `outlier'
     }
     
     // Close postfile
@@ -72,15 +86,15 @@ program define detectoutlier
     if _N > 0 {
         rename (variable varlabel value) (Variable_Name Variable_Label Outlier_Value)
         order Variable_Name Variable_Label `addvar' Outlier_Value
-        capture export excel using "`using'", firstrow(variables) replace
+        capture export excel using "`using'", sheet("Outlier") `sheetsettings' `header' cell("A`row'")
         if _rc != 0 {
-            di as error "Failed to export to Excel. Error code: " _rc
+            display as error "Failed to export to Excel. Error code: " _rc
             exit _rc
         }
-        di as text "Outliers exported to `using'"
+        display as text "Outliers exported to `using'"
     }
     else {
-        di as text "No outliers detected"
+        display as text "No outliers detected"
     }
     
     // Restore original data

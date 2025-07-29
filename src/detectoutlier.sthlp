@@ -3,9 +3,6 @@
 {cmd:help detectoutlier}
 {hline}
 
-5
-
-
 {title:Title}
 
 {phang}
@@ -17,7 +14,7 @@
 
 {p 8 15 2}
 {cmd:detectoutlier} {it:varlist}
-{cmd:,} {opt addvar(varlist)} {opt sd(#)} {opt avoid(numlist)} {opt using("filename.xlsx")}
+{cmd:,} {opt using("filename.xlsx")} {opt addvar(varlist)} {opt sd(#)} {opt avoid(numlist)} 
 
 {hline}
 
@@ -37,6 +34,9 @@ Detected outliers are exported to an Excel spreadsheet, along with optional meta
 {hline}
 
 {title:Options}
+{phang}
+{opt using("filename.xlsx")} 
+specifies the Excel file to export outlier results. If the file exists, the command will add to it (new sheet rows).
 
 {phang}
 {opt addvar(varlist)} 
@@ -50,16 +50,14 @@ sets the standard deviation threshold. Default is 3.
 {opt avoid(numlist)} 
 lists numeric codes to ignore when computing statistics (e.g., -96 -97 -98 -99 99). These values are treated as missing.
 
-{phang}
-{opt using("filename.xlsx")} 
-specifies the Excel file to export outlier results. If the file exists, the command will add to it (new sheet rows).
+
 
 {hline}
 
 {title:Example}
 
 {phang2}
-{cmd:. detectoutlier s3_q7_1 s3_q7_2, addvar(fielddate sup) sd(2.5) avoid(-96 -97 -98 -99 99) using("outliers.xlsx")}
+{cmd:. detectoutlier s3_q7_1 s3_q7_2 using "outliers.xlsx", addvar(fielddate enumerator) sd(2.5) avoid(-96 -97 -98 -99 99) }
 
 {pstd}
 Detects outliers more than 2.5 standard deviations from the mean for the specified survey variables,
@@ -80,7 +78,7 @@ Contact: {it:Md. Redoan Hossain Bhuiyan} — redoanhossain630@gmail.com
 {title:Also see}
 
 {psee}
-Manual: {manhelp summarize D}, {manhelp export D}
+Manual: {optcounts summarize D}, {manhelp export D}
 
 {psee}
 Other: {help su}, {help export excel}, {help program}

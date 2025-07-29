@@ -1,0 +1,6 @@
+v 3
+d detectoutlier: Generate enumerator bias reports
+d distribution-date: 2024-07-04
+f src/detectoutlier.ado
+f src/detectoutlier.sthlp
+f examples/example.do

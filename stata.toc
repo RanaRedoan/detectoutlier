@@ -1,0 +1,3 @@
+v 3
+d detectoutlier
+p detectoutlier        Generate special response count of a dataset

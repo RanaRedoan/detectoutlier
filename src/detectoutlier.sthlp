@@ -3,7 +3,7 @@
 {cmd:help detectoutlier}
 {hline}
 
-3
+4
 
 
 {title:Title}

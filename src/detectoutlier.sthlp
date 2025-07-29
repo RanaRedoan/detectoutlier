@@ -1,86 +1,85 @@
-```stata
 {smcl}
-{* *! version 1.3.0  29jul2025}{...}
-{viewerjumpto "Syntax" "detectoutlier##syntax"}{...}
-{viewerjumpto "Description" "detectoutlier##description"}{...}
-{viewerjumpto "Options" "detectoutlier##options"}{...}
-{viewerjumpto "Examples" "detectoutlier##examples"}{...}
-{viewerjumpto "Stored results" "detectoutlier##results"}{...}
-{viewerjumpto "Author" "detectoutlier##author"}{...}
+{* *! version 1.0.0  29 July 2025}{...}
+{cmd:help detectoutlier}
+{hline}
 
 {title:Title}
-2
-{phang}
-{bf:detectoutlier} {hline 2} Detect outliers in numeric variables and export results to Excel
 
-{marker syntax}{...}
+{phang}
+{bf:detectoutlier} — Detect outliers in survey variables and export them to Excel
+
+{hline}
+
 {title:Syntax}
 
-{p 8 17 2}
-{cmd:detectoutlier} {varlist} [{cmd:,} {opt addvar(varlist)} {opt sd(real)} {opt using(filename)} {opt avoid(numlist)}]
+{p 8 15 2}
+{cmd:detectoutlier} {it:varlist}
+{cmd:,} {opt addvar(varlist)} {opt sd(#)} {opt avoid(numlist)} {opt using("filename.xlsx")}
 
-{synoptset 20 tabbed}{...}
-{synopthdr}
-{synoptline}
-{synopt:{opt addvar(varlist)}}Additional variables to include in the output{p_end}
-{synopt:{opt sd(real)}}Number of standard deviations to define outliers; default is {cmd:sd(3)}{p_end}
-{synopt:{opt using(filename)}}Excel file to save the results; must have .xlsx extension{p_end}
-{synopt:{opt avoid(numlist)}}List of values to exclude from outlier detection (set to missing){p_end}
-{synoptline}
-{p2colreset}{...}
+{hline}
 
-{pstd}
-{varlist} must contain numeric variables only.
-
-{marker description}{...}
 {title:Description}
 
 {pstd}
-{cmd:detectoutlier} identifies outliers in the specified numeric variables using the standard deviation method. An observation is considered an outlier if its value lies beyond the mean plus or minus a specified number of standard deviations. The results are exported to an Excel file in the "Outlier" sheet, including the variable name, variable label, specified additional variables, and the outlier value.
+The {cmd:detectoutlier} command identifies outliers in a list of survey variables using a user-specified standard deviation threshold.
+Outliers are defined as values outside the range: 
 
-{marker options}{...}
-{title:Options}
-
-{dlgtab:Main}
-
-{phang}
-{opt addvar(varlist)} specifies additional variables to include in the output Excel file, such as identifiers or metadata (e.g., key, supervisor, enumerator, date).
-
-{phang}
-{opt sd(real)} specifies the number of standard deviations from the mean to use as the threshold for identifying outliers. The default is 3.
-
-{phang}
-{opt using(filename)} specifies the Excel file where the results will be saved. The filename must have a .xlsx extension. This option is required.
-
-{phang}
-{opt avoid(numlist)} specifies a list of numeric values (e.g., -99 99 -97) to be excluded from outlier detection by setting them to missing.
-
-{marker examples}{...}
-{title:Examples}
-
-{pstd}Detect outliers in variables {cmd:s3_1_5} and {cmd:s3ಸ3_1_6}, including {cmd:key} in the output, using 3 standard deviations, excluding -99 and 99, and save to "income_outliers.xlsx":{p_end}
-
-{phang2}{cmd:. detectoutlier s3_1_5 s3_1_6, addvar(key) sd(3) using "income_outliers.xlsx" avoid(-99 99)}{p_end}
-
-{pstd}Detect outliers in variables {cmd:s3_q7_1} to {cmd:s3_q7_4}, including {cmd:sup}, {cmd:enum}, {cmd:fielddate}, and {cmd:key}, excluding -96, -97, -98, -99, and 99, and save to "outliers.xlsx":{p_end}
-
-{phang2}{cmd:. detectoutlier s3_q7_1 s3_q7_2 s3_q7_3 s3_q7_4, addvar(sup enum fielddate key) sd(2.5) using "outliers.xlsx" avoid(-96 -97 -98 -99 99)}{p_end}
-
-{marker results}{...}
-{title:Stored results}
+{p 12 15 2}
+mean ± (sd × standard deviation)
 
 {pstd}
-{cmd:detectoutlier} does not store any results in {cmd:r()} or {cmd:e()}.
+You can also specify values to be treated as special missing values (e.g. -99, -98, etc.).
+Detected outliers are exported to an Excel spreadsheet, along with optional metadata variables.
 
-{marker author}{...}
+{hline}
+
+{title:Options}
+
+{phang}
+{opt addvar(varlist)} 
+specifies additional variables to include in the output file (e.g., respondent ID, interview date, etc.).
+
+{phang}
+{opt sd(#)} 
+sets the standard deviation threshold. Default is 3.
+
+{phang}
+{opt avoid(numlist)} 
+lists numeric codes to ignore when computing statistics (e.g., -96 -97 -98 -99 99). These values are treated as missing.
+
+{phang}
+{opt using("filename.xlsx")} 
+specifies the Excel file to export outlier results. If the file exists, the command will add to it (new sheet rows).
+
+{hline}
+
+{title:Example}
+
+{phang2}
+{cmd:. detectoutlier s3_q7_1 s3_q7_2, addvar(fielddate sup) sd(2.5) avoid(-96 -97 -98 -99 99) using("outliers.xlsx")}
+
+{pstd}
+Detects outliers more than 2.5 standard deviations from the mean for the specified survey variables,
+ignores special codes, and exports flagged records to "outliers.xlsx".
+
+{hline}
+
 {title:Author}
 
 {pstd}
-[Md. Redoan Hossain Bhuiyan]{p_end}
+This command was developed for internal data quality checks on survey datasets.
+
 {pstd}
-Email: [redoanhossain630@gmail.com]{p_end}
+Contact: {it:Md. Redoan Hossain Bhuiyan} — redoanhossain630@gmail.com
 
+{hline}
 
-{smcl}
-{* *! version 1.3.0  29jul2025}
-```
+{title:Also see}
+
+{psee}
+Manual: {manhelp summarize D}, {manhelp export D}
+
+{psee}
+Other: {help su}, {help export excel}, {help program}
+
+{hline}

@@ -76,16 +76,10 @@
 {title:Author}
 
 {pstd}
-[Your Name], [Your Institution/Organization]{p_end}
+[Md. Redoan Hossain Bhuiyan]{p_end}
 {pstd}
-Email: [Your Email]{p_end}
+Email: [redoanhossain630@gmail.com]{p_end}
 
-{pstd}
-To install this command from GitHub, use:{p_end}
-{phang2}{cmd:. net install detectoutlier, from("https://raw.githubusercontent.com/yourusername/yourrepo/main/")}{p_end}
-
-{pstd}
-Please replace [Your Name], [Your Institution/Organization], [Your Email], and the GitHub URL with your actual details.
 
 {smcl}
 {* *! version 1.3.0  29jul2025}

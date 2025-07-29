@@ -3,6 +3,9 @@
 {cmd:help detectoutlier}
 {hline}
 
+2
+
+
 {title:Title}
 
 {phang}

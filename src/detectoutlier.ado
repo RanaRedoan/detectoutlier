@@ -1,3 +1,4 @@
+```stata
 program define detectoutlier
     version 15.1
     syntax varlist(min=1 numeric) [, addvar(varlist) sd(real 3) using(string)]
@@ -8,9 +9,12 @@ program define detectoutlier
         exit 198
     }
     
+    // Debug: Display the using option
+    di as text "Debug: using option specified as: `using'"
+    
     // Check if file extension is .xlsx
     if !regexm("`using'", "\.xlsx$") {
-        di as error "Output file must have .xlsx extension"
+        di as error "Output file must have .xlsx extension. Specified: `using'"
         exit 198
     }
     
@@ -68,7 +72,11 @@ program define detectoutlier
     if _N > 0 {
         rename (variable varlabel value) (Variable_Name Variable_Label Outlier_Value)
         order Variable_Name Variable_Label `addvar' Outlier_Value
-        export excel using "`using'", firstrow(variables) replace
+        capture export excel using "`using'", firstrow(variables) replace
+        if _rc != 0 {
+            di as error "Failed to export to Excel. Error code: " _rc
+            exit _rc
+        }
         di as text "Outliers exported to `using'"
     }
     else {
@@ -78,3 +86,4 @@ program define detectoutlier
     // Restore original data
     restore
 end
+```

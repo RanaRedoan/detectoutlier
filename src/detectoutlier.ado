@@ -1,59 +1,71 @@
 program define detectoutlier, rclass
     version 15.0
 
-    // Parse: varlist using filename, then options
-    syntax varlist(min=1) using/, ///
-        ADDVAR(varlist) ///
-        SD(real 3) ///
-        AVOID(numlist)
+    // Capture varlist and using filename manually
+    gettoken first tok : 0, parse(" ,")
+    local varlist `first'
+
+    gettoken second tok : tok, parse(" ,")
+    if "`second'" != "using" {
+        di as err "syntax: detectoutlier varlist using filename, [options]"
+        exit 198
+    }
+
+    // Get the using file
+    gettoken usingfile rest : tok, parse(" ,")
+    local usingfile = subinstr(`"`usingfile'"', `"""', "", .)  // remove quotes if any
+
+    // Now parse the remaining options
+    syntax [, ADDVAR(varlist) SD(real 3) AVOID(numlist)]
+
+    // Default SD
+    if missing(`sd') {
+        local sd = 3
+    }
 
     preserve
 
-    // Extract Excel filename from using
-    local outfile `"`using'"'
-
-    // Initialize Excel export settings
+    // Initialize Excel settings
     local row = 1
     local header = "firstrow(variables)"
     local sheetsettings = "sheetreplace"
 
-    // Loop over each variable in the varlist
+    // Loop through all variables in varlist
     foreach var of varlist `varlist' {
-        
+
         qui count if !missing(`var')
         if r(N) == 0 continue
 
-        // Handle avoid values: convert them to missing
+        // Replace avoid values with missing
         foreach badval of numlist `avoid' {
-            qui replace `var' = . if `var' == `badval'
+            quietly replace `var' = . if `var' == `badval'
         }
 
-        // Summary statistics
-        qui su `var' if !missing(`var')
+        // Summarize
+        quietly summarize `var' if !missing(`var')
         local mean = r(mean)
         local sdv  = r(sd)
 
-        // Flag outliers using SD threshold
+        // Outlier logic
         gen __outlier__ = 0
         replace __outlier__ = 1 if (`var' > (`mean' + `sd'*`sdv') | `var' < (`mean' - `sd'*`sdv')) & !missing(`var')
 
-        qui count if __outlier__ == 1
+        count if __outlier__ == 1
         if r(N) == 0 {
             drop __outlier__
             continue
         }
 
-        // Add metadata columns
+        // Add meta columns
         gen __variable__ = "`var'"
         local label : variable label `var'
         gen __label__ = "`label'"
         gen __value__ = `var'
 
-        // Export detected outliers to Excel
-        cap export excel `addvar' __variable__ __label__ __value__ using "`outfile'" ///
+        // Export outliers
+        cap export excel `addvar' __variable__ __label__ __value__ using "`usingfile'" ///
             if __outlier__ == 1, sheet("Outlier") `sheetsettings' `header' cell("A`row'")
 
-        // Update row counter for next export
         local row = `row' + r(N)
         local sheetsettings = "sheetmodify"
         local header = ""

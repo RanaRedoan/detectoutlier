@@ -1,101 +1,62 @@
-program define detectoutlier
-    version 15.1
-    syntax varlist(min=1 numeric) [, addvar(varlist) sd(real 3) using(string) avoid(numlist)]
-    
-    // Check if using option is specified
-    if "`using'" == "" {
-        display as error "using option required"
-        exit 198
-    }
-    
-    // Check if file extension is .xlsx
-    if !regexm("`using'", "\.xlsx$") {
-        display as error "Output file must have .xlsx extension. Specified: `using'"
-        exit 198
-    }
-    
-    // Preserve original data
+program define detectoutlier, rclass
+    version 15.0
+
+    syntax varlist(min=1) [if] [in], ///
+        ADDVAR(varlist) ///
+        SD(real 3) ///
+        AVOID(numlist) ///
+        USING(string)
+
     preserve
-    
-    // Initialize temporary variables
-    tempvar mean sd lower upper outlier value
-    tempname results
-    tempfile tempout
-    
-    // Initialize row counter and Excel settings
+
+    // Initialize variables
     local row = 1
     local header = "firstrow(variables)"
     local sheetsettings = "sheetreplace"
-    
-    // Create temporary file to store results
-    postfile `results' str32 variable str244 varlabel `addvar' double value using `tempout'
-    
-    // Loop through each variable in varlist
+
+    // Loop over each variable in varlist
     foreach var of varlist `varlist' {
-        // Check if variable has non-missing observations
-        quietly count if `var' != .
-        if r(N) > 0 {
-            // Temporarily set avoid values to missing
-            if "`avoid'" != "" {
-                foreach val of numlist `avoid' {
-                    quietly replace `var' = . if `var' == `val'
-                }
-            }
-            
-            // Calculate mean and standard deviation
-            quietly summarize `var'
-            scalar `mean' = r(mean)
-            scalar `sd' = r(sd)
-            
-            // Calculate outlier bounds
-            scalar `lower' = `mean' - `sd' * r(sd)
-            scalar `upper' = `mean' + `sd' * r(sd)
-            
-            // Generate outlier indicator
-            quietly gen `outlier' = (`var' < `lower' | `var' > `upper') & !missing(`var')
-            quietly gen `value' = `var'
-            
-            // Get variable label
-            local varlabel : variable label `var'
-            if "`varlabel'" == "" local varlabel "`var'"
-            
-            // Post outlier observations to results
-            quietly levelsof _n if `outlier', local(obs)
-            foreach i of local obs {
-                local val = `value'[`i']
-                local postcmd "post `results' (`"`var'"') (`"`varlabel'"') "
-                foreach addv of varlist `addvar' {
-                    local val`addv' = `addv'[`i']
-                    local postcmd "`postcmd' (`"`val`addv''"') "
-                }
-                local postcmd "`postcmd' (`val')"
-                quietly `postcmd'
-            }
-            
-            // Drop temporary variables
-            quietly drop `outlier' `value'
+
+        qui count if !missing(`var')
+        if r(N) == 0 continue
+
+        // Clean avoid values
+        foreach badval of numlist `avoid' {
+            qui replace `var' = . if `var' == `badval'
         }
-    }
-    
-    // Close postfile
-    postclose `results'
-    
-    // Export results to Excel
-    use "`tempout'", clear
-    if _N > 0 {
-        rename (variable varlabel value) (Variable_Name Variable_Label Outlier_Value)
-        order Variable_Name Variable_Label `addvar' Outlier_Value
-        capture export excel using "`using'", sheet("Outlier") `sheetsettings' `header' cell("A`row'")
-        if _rc != 0 {
-            display as error "Failed to export to Excel. Error code: " _rc
-            exit _rc
+
+        // Summary stats
+        qui su `var' if !missing(`var')
+        local mean = r(mean)
+        local sdv = r(sd)
+
+        // Flag outliers
+        gen __outlier__ = 0
+        replace __outlier__ = 1 if (`var' > (`mean' + `sd'*`sdv') | `var' < (`mean' - `sd'*`sdv')) & !missing(`var')
+
+        qui count if __outlier__ == 1
+        if r(N) == 0 {
+            drop __outlier__
+            continue
         }
-        display as text "Outliers exported to `using'"
+
+        // Create metadata columns
+        gen __variable__ = "`var'"
+        local label : variable label `var'
+        gen __label__ = "`label'"
+        gen __value__ = `var'
+
+        // Export to Excel
+        cap export excel `addvar' __variable__ __label__ __value__ using "`using'" ///
+            if __outlier__ == 1, sheet("Outlier") `sheetsettings' `header' cell("A`row'")
+
+        // Update counters and cleanup
+        local row = `row' + r(N)
+        local sheetsettings = "sheetmodify"
+        local header = ""
+
+        drop __outlier__ __variable__ __label__ __value__
     }
-    else {
-        display as text "No outliers detected"
-    }
-    
-    // Restore original data
+
     restore
 end

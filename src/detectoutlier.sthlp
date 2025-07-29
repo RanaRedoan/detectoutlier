@@ -57,7 +57,7 @@ lists numeric codes to ignore when computing statistics (e.g., -96 -97 -98 -99 9
 {title:Example}
 
 {phang2}
-{cmd:. detectoutlier s3_q7_1 s3_q7_2 using "outliers.xlsx", addvar(fielddate enumerator) sd(2.5) avoid(-96 -97 -98 -99 99) }
+{cmd: detectoutlier income expenditure study_hour meal_time distance using "outliers.xlsx", addvar(fielddate enumerator key) sd(3) avoid(-99 99) }
 
 {pstd}
 Detects outliers more than 2.5 standard deviations from the mean for the specified survey variables,

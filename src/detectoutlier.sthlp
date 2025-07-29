@@ -1,5 +1,6 @@
+```stata
 {smcl}
-{* *! version 1.0.0  29jul2025}{...}
+{* *! version 1.3.0  29jul2025}{...}
 {viewerjumpto "Syntax" "detectoutlier##syntax"}{...}
 {viewerjumpto "Description" "detectoutlier##description"}{...}
 {viewerjumpto "Options" "detectoutlier##options"}{...}
@@ -16,7 +17,7 @@
 {title:Syntax}
 
 {p 8 17 2}
-{cmd:detectoutlier} {varlist} [{cmd:,} {opt addvar(varlist)} {opt sd(real)} {opt using(filename)}]
+{cmd:detectoutlier} {varlist} [{cmd:,} {opt addvar(varlist)} {opt sd(real)} {opt using(filename)} {opt avoid(numlist)}]
 
 {synoptset 20 tabbed}{...}
 {synopthdr}
@@ -24,6 +25,7 @@
 {synopt:{opt addvar(varlist)}}Additional variables to include in the output{p_end}
 {synopt:{opt sd(real)}}Number of standard deviations to define outliers; default is {cmd:sd(3)}{p_end}
 {synopt:{opt using(filename)}}Excel file to save the results; must have .xlsx extension{p_end}
+{synopt:{opt avoid(numlist)}}List of values to exclude from outlier detection (set to missing){p_end}
 {synoptline}
 {p2colreset}{...}
 
@@ -34,7 +36,7 @@
 {title:Description}
 
 {pstd}
-{cmd:detectoutlier} identifies outliers in the specified numeric variables using the standard deviation method. An observation is considered an outlier if its value lies beyond the mean plus or minus a specified number of standard deviations. The results are exported to an Excel file, including the variable name, variable label, specified additional variables, and the outlier value.
+{cmd:detectoutlier} identifies outliers in the specified numeric variables using the standard deviation method. An observation is considered an outlier if its value lies beyond the mean plus or minus a specified number of standard deviations. The results are exported to an Excel file in the "Outlier" sheet, including the variable name, variable label, specified additional variables, and the outlier value.
 
 {marker options}{...}
 {title:Options}
@@ -42,7 +44,7 @@
 {dlgtab:Main}
 
 {phang}
-{opt addvar(varlist)} specifies additional variables to include in the output Excel file, such as identifiers or metadata (e.g., id, enumerator_name, date).
+{opt addvar(varlist)} specifies additional variables to include in the output Excel file, such as identifiers or metadata (e.g., key, supervisor, enumerator, date).
 
 {phang}
 {opt sd(real)} specifies the number of standard deviations from the mean to use as the threshold for identifying outliers. The default is 3.
@@ -50,16 +52,19 @@
 {phang}
 {opt using(filename)} specifies the Excel file where the results will be saved. The filename must have a .xlsx extension. This option is required.
 
+{phang}
+{opt avoid(numlist)} specifies a list of numeric values (e.g., -99 99 -97) to be excluded from outlier detection by setting them to missing.
+
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Detect outliers in variables {cmd:price} and {cmd:weight}, including {cmd:id} and {cmd:date} in the output, using 3 standard deviations, and save to "outliers.xlsx":{p_end}
+{pstd}Detect outliers in variables {cmd:s3_1_5} and {cmd:s3ಸ3_1_6}, including {cmd:key} in the output, using 3 standard deviations, excluding -99 and 99, and save to "income_outliers.xlsx":{p_end}
 
-{phang2}{cmd:. detectoutlier price weight, addvar(id date) sd(3) using "outliers.xlsx"}{p_end}
+{phang2}{cmd:. detectoutlier s3_1_5 s3_1_6, addvar(key) sd(3) using "income_outliers.xlsx" avoid(-99 99)}{p_end}
 
-{pstd}Detect outliers in variable {cmd:income} using 2.5 standard deviations, including {cmd:region} in the output:{p_end}
+{pstd}Detect outliers in variables {cmd:s3_q7_1} to {cmd:s3_q7_4}, including {cmd:sup}, {cmd:enum}, {cmd:fielddate}, and {cmd:key}, excluding -96, -97, -98, -99, and 99, and save to "outliers.xlsx":{p_end}
 
-{phang2}{cmd:. detectoutlier income, addvar(region) sd(2.5) using "income_outliers.xlsx"}{p_end}
+{phang2}{cmd:. detectoutlier s3_q7_1 s3_q7_2 s3_q7_3 s3_q7_4, addvar(sup enum fielddate key) sd(2.5) using "outliers.xlsx" avoid(-96 -97 -98 -99 99)}{p_end}
 
 {marker results}{...}
 {title:Stored results}
@@ -83,4 +88,5 @@ To install this command from GitHub, use:{p_end}
 Please replace [Your Name], [Your Institution/Organization], [Your Email], and the GitHub URL with your actual details.
 
 {smcl}
-{* *! version 1.0.0  29jul2025}
+{* *! version 1.3.0  29jul2025}
+```

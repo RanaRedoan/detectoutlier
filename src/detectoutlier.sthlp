@@ -9,7 +9,7 @@
 {viewerjumpto "Author" "detectoutlier##author"}{...}
 
 {title:Title}
-
+2
 {phang}
 {bf:detectoutlier} {hline 2} Detect outliers in numeric variables and export results to Excel
 

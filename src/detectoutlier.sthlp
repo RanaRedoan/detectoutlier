@@ -1,86 +1,128 @@
+*! version 1.0.0 30Jul2025
+*! Outlier detection and export to Excel
+
 {smcl}
-{* *! version 1.0.0  29 July 2025}{...}
-{cmd:help detectoutlier}
-{hline}
-
 {title:Title}
-2
-{phang}
-{bf:detectoutlier} — Detect outliers in survey variables and export them to Excel
 
-{hline}
+{p 4 4 2}
+{bf:detectoutlier} - Detect outliers using standard deviation method and export to Excel
+
 
 {title:Syntax}
 
-{p 8 15 2}
-{cmd:detectoutlier} {it:varlist}
-{cmd:,} {opt using("filename.xlsx")} {opt addvar(varlist)} {opt sd(#)} {opt avoid(numlist)} 
+{p 4 4 2}
+{cmd:detectoutlier} [{varlist}] [{cmd:if}] [{cmd:in}] {cmd:using} {it:filename.xlsx}{cmd:,} [{cmdab:ADDvars(}{it:varlist}{cmd:)} {cmdab:SD(}{it:#}{cmd:)} {cmdab:AVOID(}{it:numlist}{cmd:)}]
 
-{hline}
 
 {title:Description}
 
-{pstd}
-The {cmd:detectoutlier} command identifies outliers in a list of survey variables using a user-specified standard deviation threshold.
-Outliers are defined as values outside the range: 
+{p 4 4 2}
+{cmd:detectoutlier} identifies outliers in numeric variables based on the mean ± k standard deviations (SD). The command exports results to an Excel file with variable names, labels, outlier values, and summary statistics. When no variables are specified, it automatically checks all numeric variables in the dataset.
 
-{p 12 15 2}
-mean ± (sd × standard deviation)
-
-{pstd}
-You can also specify values to be treated as special missing values (e.g. -99, -98, etc.).
-Detected outliers are exported to an Excel spreadsheet, along with optional metadata variables.
-
-{hline}
 
 {title:Options}
-{phang}
-{opt using("filename.xlsx")} 
-specifies the Excel file to export outlier results. If the file exists, the command will add to it (new sheet rows).
+
+{dlgtab:Main}
 
 {phang}
-{opt addvar(varlist)} 
-specifies additional variables to include in the output file (e.g., respondent ID, interview date, etc.).
+{opt using} specifies the Excel file path for output (required).
 
 {phang}
-{opt sd(#)} 
-sets the standard deviation threshold. Default is 3.
+{opt ADDvars(varlist)} specifies additional variables to include in the output (e.g., ID variables).
 
 {phang}
-{opt avoid(numlist)} 
-lists numeric codes to ignore when computing statistics (e.g., -96 -97 -98 -99 99). These values are treated as missing.
+{opt SD(#)} sets the number of standard deviations to define outliers (default is 3).
+
+{phang}
+{opt AVOID(numlist)} specifies values to exclude from analysis (e.g., -999 for missing data).
 
 
+{title:Examples}
 
-{hline}
+{p 4 4 2}
+Basic usage (check all numeric variables):
 
-{title:Example}
+{p 8 12 2}
+{cmd:. detectoutlier using "outliers.xlsx"}
 
-{phang2}
-{cmd: detectoutlier income expenditure study_hour meal_time distance using "outliers.xlsx", addvar(fielddate enumerator key) sd(3) avoid(-99 99) }
+{p 4 4 2}
+Specify variables and adjust SD threshold:
 
-{pstd}
-Detects outliers more than 2.5 standard deviations from the mean for the specified survey variables,
-ignores special codes, and exports flagged records to "outliers.xlsx".
+{p 8 12 2}
+{cmd:. detectoutlier price mpg weight using "car_outliers.xlsx", SD(2.5)}
 
-{hline}
+{p 4 4 2}
+Exclude specific values and keep ID variable:
+
+{p 8 12 2}
+{cmd:. detectoutlier income expenditure using "output.xlsx", ADDvars(hhid) AVOID(-999 -888)}
+
+
+{title:Output Structure}
+
+{p 4 4 2}
+The Excel file contains a sheet named "Outlier" with these columns:
+
+{p2colset 8 24 26 8}{...}
+{p2col :{bf:variable}}Variable name{p_end}
+{p2col :{bf:label}}Variable label (if defined){p_end}
+{p2col :{bf:value}}Outlier value{p_end}
+{p2col :{bf:min}}Minimum non-outlier value{p_end}
+{p2col :{bf:max}}Maximum non-outlier value{p_end}
+{p2col :*Additional columns}If specified in {cmd:ADDvars()}{p_end}
+
+
+{title:Completion Message}
+
+{p 4 4 2}
+After execution, Stata displays a formatted summary:
+
+{cmd}
+-------------------------------------------------------------------------------
+          OUTLIER DETECTION COMPLETED SUCCESSFULLY
+-------------------------------------------------------------------------------
+              Results saved to: C:\results.xlsx
+              Variables processed: 15
+       Variables with outliers found: 7
+            Outlier definition: Mean ± 3 SD
+                 Values avoided: -999 -888
+-------------------------------------------------------------------------------
+{txt}
+
+{title:Installation}
+
+{p 4 4 2}
+1. Save {cmd:detectoutlier.ado} in your personal ado directory (find using {cmd:sysdir})
+
+{p 4 4 2}
+2. Save this help file as {cmd:detectoutlier.sthlp} in the same location
+
+{p 4 4 2}
+3. Verify installation:
+
+{p 8 12 2}
+{cmd:. help detectoutlier}
+
 
 {title:Author}
 
-{pstd}
-This command was developed for internal data quality checks on survey datasets.
+{p 4 4 2}
+Your Name
 
-{pstd}
-Contact: {it:Md. Redoan Hossain Bhuiyan} — redoanhossain630@gmail.com
+{p 4 4 2}
+GitHub: {browse "https://github.com/yourprofile":yourprofile}
 
-{hline}
+{p 4 4 2}
+Email: your@email.com
 
-{title:Also see}
 
-{psee}
-Manual: {optcounts summarize D}, {manhelp export D}
+{title:Version}
 
-{psee}
-Other: {help su}, {help export excel}, {help program}
+{p 4 4 2}
+Version 1.0.0, 30 July 2025
 
-{hline}
+
+{title:License}
+
+{p 4 4 2}
+MIT License

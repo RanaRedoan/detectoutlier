@@ -1,38 +1,108 @@
+*============================================================*
+*                    DETECTOUTILER EXAMPLE DO FILE           *
+*                    Last updated: 30Jul2025                 *
+*============================================================*
 
-### 4. `example.do`
-Detailed example file for the updated `optcounts`.
+* This do file demonstrates the usage of detectoutlier command *
+* with different scenarios and detailed explanations          *
 
-```stata
-* Example script for optcounts
-* Date: July 04, 2025
-* Author: Md. Redoan Hossain Bhuiyan
-
-* Clear existing data and set more off for better display
 clear all
 set more off
 
-* Load the sample dataset
-use "E:\Old Files[1] Project Task\[18] BRAC_BYP\[4] HFC\[3] 18032024\Final BYP surveydata.dta", clear
+*------------------------------------------------------------*
+* SECTION 1: SETUP AND SAMPLE DATA CREATION
+*------------------------------------------------------------*
 
-* Display dataset information
-describe
-summarize
+// Create a sample dataset with numeric variables and some outliers
+set obs 100
+set seed 1234
 
-* Run the optcounts command with example special values
-di _n "Running optcounts with special values -99, 99, -999, -98, -96, 96:"
-optcounts -99 99 -999 -98 -96 96, enum(a01)
+// Generate normal variables with some outliers
+gen income = rnormal(50000, 15000)  // Normal distribution
+replace income = 250000 in 1/3      // Add some outliers (high income)
+replace income = 5000 in 98/100     // Add some outliers (low income)
 
-* Explanation:
-* - `-99 99 -999 -98 -96 96` are the special values to count across all variables.
-* - `a01` is the enumerator variable.
-* - The output shows the total count of these values and the number of surveys per enumerator.
+gen age = rnormal(45, 15)           // Normal distribution
+replace age = 150 in 5              // Impossible age outlier
+replace age = -10 in 95             // Negative age outlier
 
-* Optional: Verify the results with tabulate for a specific variable
-di _n "Verifying with tabulate for a sample variable (e.g., d4):"
-tabulate d4, nolabel
+// Generate ID variable
+gen id = _n
 
-* Clean up (not necessary here as optcounts handles it)
-* Note: optcounts automatically drops temporary variables
+// Add variable labels
+label variable income "Annual household income (USD)"
+label variable age "Respondent age (years)"
+label variable id "Household ID"
 
-* Save the log of this session (optional)
-log close
+// Create some special missing values (-999)
+replace income = -999 in 10/12      // Add missing value codes
+
+
+*------------------------------------------------------------*
+* SECTION 2: BASIC USAGE - DETECT OUTLIERS IN ALL NUMERIC VARS
+*------------------------------------------------------------*
+
+/*
+Basic syntax when no variables are specified:
+- Checks all numeric variables in dataset
+- Uses default 3 SD threshold
+- Exports to basic_outliers.xlsx
+*/
+
+detectoutlier using "basic_outliers.xlsx"
+
+
+*------------------------------------------------------------*
+* SECTION 3: SPECIFIC VARIABLES WITH CUSTOM SD THRESHOLD
+*------------------------------------------------------------*
+
+/*
+This example:
+- Only checks 'income' and 'age' variables
+- Uses 2.5 SD threshold instead of default 3
+- Exports to custom_sd_outliers.xlsx
+*/
+
+detectoutlier income age using "custom_sd_outliers.xlsx", sd(2.5)
+
+
+*------------------------------------------------------------*
+* SECTION 4: WITH AVOID VALUES AND ADDITIONAL VARIABLES
+*------------------------------------------------------------*
+
+/*
+This example demonstrates:
+- Specifying values to exclude (-999)
+- Including an ID variable in output
+- Using default 3 SD threshold
+- Exports to full_featured_outliers.xlsx
+*/
+
+detectoutlier income age using "full_featured_outliers.xlsx", ///
+    avoid(-999) addvars(id)
+
+
+*------------------------------------------------------------*
+* SECTION 5: REAL-WORLD EXAMPLE WITH AUTO DATASET
+*------------------------------------------------------------*
+
+// Load Stata's built-in auto dataset
+sysuse auto, clear
+
+/*
+This example shows:
+- Practical application with real data
+- Checking price and mpg variables
+- Adding make (car name) to output
+- Excluding missing codes (.)
+- Using 2 SD threshold
+*/
+
+detectoutlier price mpg using "auto_outliers.xlsx", ///
+    sd(2) avoid(.) addvars(make)
+
+
+
+*------------------------------------------------------------*
+* END OF DO FILE
+*------------------------------------------------------------*

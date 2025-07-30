@@ -14,4 +14,8 @@
 To install `detectoutlier` from this GitHub repository, use the following command in Stata:
 
 ```stata
-net install detectoutlier, from("https://raw.githubusercontent.com/yourusername/yourrepo/main/")
+net install detectoutlier, from("https://raw.githubusercontent.com/ranaredoan/detectoutlier/main/")
+
+## Command Syntax
+```stata
+detectoutlier [varlist] [if] [in] using filename.xlsx, [ADDvars(varlist) SD(#) AVOID(numlist)]

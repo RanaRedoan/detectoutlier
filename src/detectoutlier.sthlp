@@ -4,7 +4,7 @@
 {hline}
 
 {title:Title}
-
+2
 {phang}
 {bf:detectoutlier} — Detect outliers in survey variables and export them to Excel
 

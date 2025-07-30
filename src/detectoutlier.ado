@@ -13,7 +13,7 @@ program define detectoutlier
     qui keep if `touse'
 
     * Initialize Excel header sheet
-    loc row = 2                             // Data starts at row 2
+    loc row = 1                           // Data starts at row 2
     loc headeropt = "firstrow(variables)"  // Header written only once
     loc sheetmode = "sheetreplace"         // First write replaces sheet
 

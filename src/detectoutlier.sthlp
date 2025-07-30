@@ -11,7 +11,7 @@
 {title:Syntax}
 
 {p 4 4 2}
-{cmd:detectoutlier} [{varlist}] [{cmd:if}] [{cmd:in}] {cmd:using} {it:filename.xlsx}{cmd:,} [{cmdab:ADDvars(}{it:varlist}{cmd:)} {cmdab:SD(}{it:#}{cmd:)} {cmdab:AVOID(}{it:numlist}{cmd:)}]
+{cmd:detectoutlier} [{varlist}] [{cmd:if}] [{cmd:in}] {cmd:using} {it:filename.xlsx}{cmd:,} [{cmdab:addvars(}{it:varlist}{cmd:)} {cmdab:sd(}{it:#}{cmd:)} {cmdab:avoid(}{it:numlist}{cmd:)}]
 
 
 {title:Description}

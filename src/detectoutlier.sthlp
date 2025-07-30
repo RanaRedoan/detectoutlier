@@ -1,4 +1,4 @@
-*! version 1.0.0 30Jul2025
+*! version 1.2.0 30Jul2025
 *! Outlier detection and export to Excel
 
 {smcl}
@@ -55,7 +55,7 @@ Specify variables and adjust SD threshold:
 Exclude specific values and keep ID variable:
 
 {p 8 12 2}
-{cmd:. detectoutlier income expenditure using "output.xlsx", ADDvars(hhid) AVOID(-999 -888)}
+{cmd:. detectoutlier income expenditure using "output.xlsx", addvars(data_collector key hhid) sd(2.5) avoid(-999 -888)}
 
 
 {title:Output Structure}
@@ -75,7 +75,7 @@ The Excel file contains a sheet named "Outlier" with these columns:
 {title:Completion Message}
 
 {p 4 4 2}
-After execution, Stata displays a formatted summary:
+After execution, Stata displays a summary:
 
 {cmd}
 -------------------------------------------------------------------------------
@@ -89,37 +89,19 @@ After execution, Stata displays a formatted summary:
 -------------------------------------------------------------------------------
 {txt}
 
-{title:Installation}
-
-{p 4 4 2}
-1. Save {cmd:detectoutlier.ado} in your personal ado directory (find using {cmd:sysdir})
-
-{p 4 4 2}
-2. Save this help file as {cmd:detectoutlier.sthlp} in the same location
-
-{p 4 4 2}
-3. Verify installation:
-
-{p 8 12 2}
-{cmd:. help detectoutlier}
-
-
 {title:Author}
 
 {p 4 4 2}
-Your Name
+Md. Redoan Hossain Bhuiyan
 
 {p 4 4 2}
-GitHub: {browse "https://github.com/yourprofile":yourprofile}
-
-{p 4 4 2}
-Email: your@email.com
+Email: redoanhossain630@gmail.com
 
 
 {title:Version}
 
 {p 4 4 2}
-Version 1.0.0, 30 July 2025
+Version 1.2.0, 30 July 2025
 
 
 {title:License}

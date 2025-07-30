@@ -1,69 +1,115 @@
-*! version 1.0.1 29Jul2024
+
+*! version 1.0.9 30Jul2025
 program define detectoutlier
     version 16
     syntax varlist [if] [in] using/, [ADDvars(string) SD(real 3) AVOID(string)]
 
+    * Mark the sample
+    marksample touse, novarlist
+    qui count if `touse'
+    di "Total observations in analysis: " r(N)
+
     preserve
-    
-    * Apply if/in conditions
-    marksample touse
     qui keep if `touse'
-    
-    * Handle avoid values
-    if "`avoid'" != "" {
-        foreach var in `varlist' {
+
+    * Initialize Excel header sheet
+    loc row = 2                             // Data starts at row 2
+    loc headeropt = "firstrow(variables)"  // Header written only once
+    loc sheetmode = "sheetreplace"         // First write replaces sheet
+
+    * Create header template
+    clear
+    set obs 1
+    if "`addvars'" != "" {
+        foreach addvar in `addvars' {
+            gen `addvar' = ""
+        }
+    }
+    gen variable = ""
+    gen label = ""
+    gen value = .
+    gen min = .
+    gen max = .
+
+    export excel using "`using'", sheet("Outlier") `headeropt' cell("A1") `sheetmode'
+
+    restore
+    preserve
+    qui keep if `touse'
+
+    * Loop through each variable
+    foreach var in `varlist' {
+        cap confirm variable `var'
+        if _rc {
+            di as text "Variable `var' not found - skipped"
+            continue
+        }
+
+        * Check for valid data
+        qui count if !missing(`var')
+        if r(N) == 0 {
+            di as text "Variable `var' has no observations - skipped"
+            continue
+        }
+
+        * Apply avoid values if specified
+        if "`avoid'" != "" {
             foreach num in `avoid' {
                 qui replace `var' = . if `var' == `num'
             }
+            qui count if !missing(`var')
+            if r(N) == 0 {
+                di as text "Variable `var' became empty after avoid - skipped"
+                continue
+            }
         }
-    }
-    
-    * Initialize Excel file
-    loc row = 1
-    loc header = "firstrow(variables)"
-    loc sheetsettings = "sheetreplace"
-    
-    * Process each variable
-    foreach var in `varlist' {
-        qui count if !missing(`var')
-        
-        if r(N) > 0 {
-            * Calculate statistics
-            qui sum `var', detail
-            loc mean = r(mean)
-            loc sd_val = r(sd)
-            
-            * Identify outliers
-            gen outlier = 0
-            replace outlier = 1 if ((`var' > (`mean' + `sd'*`sd_val')) | ///
-                                 (`var' < (`mean' - `sd'*`sd_val'))) & !missing(`var')
-            
-            * Prepare for export
-            gen variable = "`var'"
-            loc label : var label `var'
-            gen label = "`label'"
-            gen value = `var'
-            
-            * Export to Excel
+
+        * Compute statistics
+        qui sum `var', detail
+        loc mean = r(mean)
+        loc sd_val = r(sd)
+        loc min_val = r(min)
+        loc max_val = r(max)
+
+        * Flag outliers
+        gen outlier = 0
+        replace outlier = 1 if ((`var' > (`mean' + `sd'*`sd_val')) | ///
+                             (`var' < (`mean' - `sd'*`sd_val'))) & !missing(`var')
+
+        * Add columns
+        gen variable = "`var'"
+        loc labeltext : var label `var'
+        gen label = "`labeltext'"
+        gen value = `var'
+        gen min = `min_val'
+        gen max = `max_val'
+
+        * Keep only outliers
+        keep if outlier == 1
+        if _N > 0 {
             if "`addvars'" != "" {
-                cap export excel `addvars' variable label value using "`using'" ///
-                    if outlier == 1, sheet("Outlier") `sheetsettings' `header' cell("A`row'")
+                export excel `addvars' variable label value min max using "`using'" ///
+                    , sheet("Outlier") `sheetmode' `headeropt' cell("A`row'")
             }
             else {
-                cap export excel variable label value using "`using'" ///
-                    if outlier == 1, sheet("Outlier") `sheetsettings' `header' cell("A`row'")
+                export excel variable label value min max using "`using'" ///
+                    , sheet("Outlier") `sheetmode' `headeropt' cell("A`row'")
             }
-            
-            * Update row counter
-            qui count if outlier == 1
-            loc row = `row' + r(N) + 1
-            
-            * Clean up
-            drop variable label value outlier
-            loc header = ""
-            loc sheetsettings = "sheetmodify"
+
+            * Update row for next export
+            qui count
+            loc row = `row' + r(N)
+
+            * Disable headers and switch to append mode after first write
+            loc headeropt = ""
+            loc sheetmode = "sheetmodify"
         }
+
+        restore
+        preserve
+        qui keep if `touse'
     }
-    
+
     restore
 end
+

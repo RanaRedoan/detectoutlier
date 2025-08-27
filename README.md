@@ -85,10 +85,10 @@ After execution, Stata displays:
 Pull requests and suggestions are welcome!
 If you find issues or have feature requests, please open an Issue in the repository.
 
-##👨‍💻 Author
+## 👨‍💻 Author
 Md. Redoan Hossain Bhuiyan
 📧 redoanhossain630@gmail.com
 
-📌 License
-
+## 📌 License
 This project is licensed under the MIT License.
+

@@ -70,7 +70,7 @@ The Excel sheet "Outlier" will contain columns like:
 
 ---
 
-##🧾 Completion Message
+### 🧾 Completion Message
 After execution, Stata displays:
 ```stata
 -------------------------------------------------------------------------------
@@ -93,5 +93,6 @@ Md. Redoan Hossain Bhuiyan
 
 ## 📌 License
 This project is licensed under the MIT License.
+
 
 

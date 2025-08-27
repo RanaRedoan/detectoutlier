@@ -59,14 +59,16 @@ use "survey_data.dta", clear
 * Detect outliers and export to Excel
 detectoutlier income expenditure, using("outliers.xlsx") addvars(key) sd(3) avoid(-999)
 ```
+---
 ## 📊 Sample Output
 The Excel sheet "Outlier" will contain columns like:
-```text
+
 | variable    | label         | value | min | max  | key | data\_collector |
 | ----------- | ------------- | ----- | --- | ---- | --- | --------------- |
 | income      | Income in USD | 10000 | 500 | 9000 | 101 | John            |
 | expenditure | Monthly exp.  | 5000  | 100 | 4500 | 102 | Alice           |
-```
+
+---
 
 ##🧾 Completion Message
 After execution, Stata displays:
@@ -91,4 +93,5 @@ Md. Redoan Hossain Bhuiyan
 
 ## 📌 License
 This project is licensed under the MIT License.
+
 

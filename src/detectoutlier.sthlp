@@ -67,8 +67,8 @@ The Excel file contains a sheet named "Outlier" with these columns:
 {p2col :{bf:variable}}Variable name{p_end}
 {p2col :{bf:label}}Variable label (if defined){p_end}
 {p2col :{bf:value}}Outlier value{p_end}
-{p2col :{bf:min}}Minimum non-outlier value{p_end}
-{p2col :{bf:max}}Maximum non-outlier value{p_end}
+{p2col :{bf:min}}Minimum value of the variable (after avoid() values are removed){p_end}
+{p2col :{bf:max}}Maximum value of the variable (after avoid() values are removed){p_end}
 {p2col :*Additional columns}If specified in {cmd:ADDvars()}{p_end}
 
 

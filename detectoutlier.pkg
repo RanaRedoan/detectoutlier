@@ -1,5 +1,5 @@
 v 3
-d detectoutlier: Generate enumerator bias reports
+d detectoutlier: Detect outliers (mean +/- k SD) and export them to Excel
 d distribution-date: 2024-07-04
 f src/detectoutlier.ado
 f src/detectoutlier.sthlp

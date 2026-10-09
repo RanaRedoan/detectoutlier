@@ -27,8 +27,8 @@ The command exports an Excel file with a sheet named "Outlier" containing:
 `variable` → Variable name
 `label` → Variable label (if defined)
 `value` → Outlier value
-`min` → Minimum non-outlier value
-`max` → Maximum non-outlier value
+`min` → Minimum value of the variable (after `avoid()` values are removed)
+`max` → Maximum value of the variable (after `avoid()` values are removed)
 Additional columns → Included if specified in `addvars()`
 
 After execution, Stata displays a completion message summarizing:
@@ -57,7 +57,7 @@ detectoutlier income expenditure using "output.xlsx", addvars(data_collector key
 use "survey_data.dta", clear
 
 * Detect outliers and export to Excel
-detectoutlier income expenditure, using("outliers.xlsx") addvars(key) sd(3) avoid(-999)
+detectoutlier income expenditure using "outliers.xlsx", addvars(key) sd(3) avoid(-999)
 ```
 ---
 ## 📊 Sample Output
